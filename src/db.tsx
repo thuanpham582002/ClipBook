@@ -81,7 +81,7 @@ export async function addClip(clip: Clip) {
   await db.history.add(clip)
 }
 
-export async function updateClip(id: number, clip: Clip) {
+export async function updateClip(id: number, clip: Partial<Clip>) {
   await db.history.update(id, clip)
 }
 
