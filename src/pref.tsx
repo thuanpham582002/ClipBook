@@ -204,10 +204,12 @@ export enum NumberActionStrategy {
 }
 
 export function prefIsDeviceManaged() {
+  if (typeof isDeviceManaged === 'undefined') return false
   return isDeviceManaged()
 }
 
 export function prefSetLanguage(language: LanguageCode) {
+  if (typeof saveLanguage === 'undefined') return
   saveLanguage(language)
 }
 
@@ -220,126 +222,157 @@ export function prefGetLanguage() : LanguageCode {
 }
 
 export function prefGetTheme() {
+  if (typeof getTheme === 'undefined') return 'auto'
   return getTheme()
 }
 
 export function prefSetTheme(theme: string) {
+  if (typeof saveTheme === 'undefined') return
   saveTheme(theme)
 }
 
 export function prefSetLicenseKey(licenseKey: string) {
+  if (typeof saveLicenseKey === 'undefined') return
   saveLicenseKey(licenseKey)
 }
 
 export function prefGetLicenseKey() {
+  if (typeof getLicenseKey === 'undefined') return ""
   return getLicenseKey()
 }
 
 export function prefGetOpenAtLogin() {
+  if (typeof shouldOpenAtLogin === 'undefined') return false
   return shouldOpenAtLogin()
 }
 
 export function prefSetOpenAtLogin(openAtLogin: boolean) {
+  if (typeof saveOpenAtLogin === 'undefined') return
   saveOpenAtLogin(openAtLogin)
 }
 
 export function prefIsOpenAtLoginManaged() {
+  if (typeof isOpenAtLoginManaged === 'undefined') return false
   return isOpenAtLoginManaged()
 }
 
 export function prefGetCheckForUpdatesAutomatically() {
+  if (typeof shouldCheckForUpdatesAutomatically === 'undefined') return true
   return shouldCheckForUpdatesAutomatically()
 }
 
 export function prefSetCheckForUpdatesAutomatically(checkForUpdatesAutomatically: boolean) {
+  if (typeof saveCheckForUpdatesAutomatically === 'undefined') return
   saveCheckForUpdatesAutomatically(checkForUpdatesAutomatically)
 }
 
 export function prefIsCheckForUpdatesAutomaticallyManaged() {
+  if (typeof isCheckForUpdatesAutomaticallyManaged === 'undefined') return false
   return isCheckForUpdatesAutomaticallyManaged()
 }
 
 export function prefAllowCheckForUpdates() {
+  if (typeof allowCheckForUpdates === 'undefined') return true
   return allowCheckForUpdates()
 }
 
 export function prefGetWarnOnClearHistory() {
+  if (typeof shouldWarnOnClearHistory === 'undefined') return true
   return shouldWarnOnClearHistory()
 }
 
 export function prefSetWarnOnClearHistory(warn: boolean) {
+  if (typeof saveWarnOnClearHistory === 'undefined') return
   saveWarnOnClearHistory(warn)
 }
 
 export function prefIsWarnOnClearHistoryManaged() {
+  if (typeof isWarnOnClearHistoryManaged === 'undefined') return false
   return isWarnOnClearHistoryManaged()
 }
 
 export function prefGetKeepFavoritesOnClearHistory() {
+  if (typeof shouldKeepFavoritesOnClearHistory === 'undefined') return false
   return shouldKeepFavoritesOnClearHistory()
 }
 
 export function prefSetKeepFavoritesOnClearHistory(keep: boolean) {
+  if (typeof saveKeepFavoritesOnClearHistory === 'undefined') return
   saveKeepFavoritesOnClearHistory(keep)
 }
 
 export function prefIsKeepFavoritesOnClearHistoryManaged() {
+  if (typeof isKeepFavoritesOnClearHistoryManaged === 'undefined') return false
   return isKeepFavoritesOnClearHistoryManaged()
 }
 
 export function prefGetIgnoreTransientContent() {
+  if (typeof shouldIgnoreTransientContent === 'undefined') return false
   return shouldIgnoreTransientContent()
 }
 
 export function prefSetIgnoreTransientContent(ignore: boolean) {
+  if (typeof saveIgnoreTransientContent === 'undefined') return
   saveIgnoreTransientContent(ignore)
 }
 
 export function prefIsIgnoreTransientContentManaged() {
+  if (typeof isIgnoreTransientContentManaged === 'undefined') return false
   return isIgnoreTransientContentManaged()
 }
 
 export function prefGetIgnoreConfidentialContent() {
+  if (typeof shouldIgnoreConfidentialContent === 'undefined') return false
   return shouldIgnoreConfidentialContent()
 }
 
 export function prefSetIgnoreConfidentialContent(ignore: boolean) {
+  if (typeof saveIgnoreConfidentialContent === 'undefined') return
   saveIgnoreConfidentialContent(ignore)
 }
 
 export function prefIsIgnoreConfidentialContentManaged() {
+  if (typeof isIgnoreConfidentialContentManaged === 'undefined') return false
   return isIgnoreConfidentialContentManaged()
 }
 
 export function prefGetOpenAppShortcut() {
+  if (typeof getOpenAppShortcut === 'undefined') return "Cmd+Shift+V"
   return getOpenAppShortcut()
 }
 
 export function prefSetOpenAppShortcut(shortcut: string) {
+  if (typeof saveOpenAppShortcut === 'undefined') return
   saveOpenAppShortcut(shortcut)
 }
 
 export function prefGetCloseAppShortcut() {
+  if (typeof getCloseAppShortcut === 'undefined') return "Escape"
   return getCloseAppShortcut()
 }
 
 export function prefSetCloseAppShortcut(shortcut: string) {
+  if (typeof saveCloseAppShortcut === 'undefined') return
   saveCloseAppShortcut(shortcut)
 }
 
 export function prefGetCloseAppShortcut2() {
+  if (typeof getCloseAppShortcut2 === 'undefined') return "Cmd+W"
   return getCloseAppShortcut2()
 }
 
 export function prefSetCloseAppShortcut2(shortcut: string) {
+  if (typeof saveCloseAppShortcut2 === 'undefined') return
   saveCloseAppShortcut2(shortcut)
 }
 
 export function prefGetCloseAppShortcut3() {
+  if (typeof getCloseAppShortcut3 === 'undefined') return "Cmd+Q"
   return getCloseAppShortcut3()
 }
 
 export function prefSetCloseAppShortcut3(shortcut: string) {
+  if (typeof saveCloseAppShortcut3 === 'undefined') return
   saveCloseAppShortcut3(shortcut)
 }
 
@@ -380,54 +413,67 @@ export function prefSetPasteSelectedItemToActiveAppShortcut(shortcut: string) {
 }
 
 export function prefGetPasteSelectedObjectToActiveAppShortcut() {
+  if (typeof getPasteSelectedObjectToActiveAppShortcut === 'undefined') return "Cmd+Shift+Enter"
   return getPasteSelectedObjectToActiveAppShortcut()
 }
 
 export function prefSetPasteSelectedObjectToActiveAppShortcut(shortcut: string) {
+  if (typeof savePasteSelectedObjectToActiveAppShortcut === 'undefined') return
   savePasteSelectedObjectToActiveAppShortcut(shortcut)
 }
 
 export function prefGetPasteNextItemShortcut() {
+  if (typeof getPasteNextItemShortcut === 'undefined') return "Cmd+N"
   return getPasteNextItemShortcut()
 }
 
 export function prefSetPasteNextItemShortcut(shortcut: string) {
+  if (typeof savePasteNextItemShortcut === 'undefined') return
   savePasteNextItemShortcut(shortcut)
 }
 
 export function prefGetEditHistoryItemShortcut() {
+  if (typeof getEditHistoryItemShortcut === 'undefined') return "Enter"
   return getEditHistoryItemShortcut()
 }
 
 export function prefSetEditHistoryItemShortcut(shortcut: string) {
+  if (typeof saveEditHistoryItemShortcut === 'undefined') return
   saveEditHistoryItemShortcut(shortcut)
 }
 
 export function prefGetOpenInBrowserShortcut() {
+  if (typeof getOpenInBrowserShortcut === 'undefined') return "Cmd+O"
   return getOpenInBrowserShortcut()
 }
 
 export function prefSetOpenInBrowserShortcut(shortcut: string) {
+  if (typeof saveOpenInBrowserShortcut === 'undefined') return
   saveOpenInBrowserShortcut(shortcut)
 }
 
 export function prefGetShowInFinderShortcut() {
+  if (typeof getShowInFinderShortcut === 'undefined') return "Cmd+Shift+F"
   return getShowInFinderShortcut()
 }
 
 export function prefSetShowInFinderShortcut(shortcut: string) {
+  if (typeof saveShowInFinderShortcut === 'undefined') return
   saveShowInFinderShortcut(shortcut)
 }
 
 export function prefGetQuickLookShortcut() {
+  if (typeof getQuickLookShortcut === 'undefined') return "Space"
   return getQuickLookShortcut()
 }
 
 export function prefSetQuickLookShortcut(shortcut: string) {
+  if (typeof saveQuickLookShortcut === 'undefined') return
   saveQuickLookShortcut(shortcut)
 }
 
 export function prefGetOpenInDefaultAppShortcut() {
+  if (typeof getOpenInDefaultAppShortcut === 'undefined') return "Cmd+Enter"
   return getOpenInDefaultAppShortcut()
 }
 
@@ -446,18 +492,22 @@ export function prefSetCopyToClipboardShortcut(shortcut: string) {
 }
 
 export function prefGetCopyObjectToClipboardShortcut() {
+  if (typeof getCopyObjectToClipboardShortcut === 'undefined') return 'Cmd+Shift+C'
   return getCopyObjectToClipboardShortcut()
 }
 
 export function prefSetCopyObjectToClipboardShortcut(shortcut: string) {
+  if (typeof saveCopyObjectToClipboardShortcut === 'undefined') return
   saveCopyObjectToClipboardShortcut(shortcut)
 }
 
 export function prefGetDeleteHistoryItemShortcut() {
+  if (typeof getDeleteHistoryItemShortcut === 'undefined') return 'Delete'
   return getDeleteHistoryItemShortcut()
 }
 
 export function prefSetDeleteHistoryItemShortcut(shortcut: string) {
+  if (typeof saveDeleteHistoryItemShortcut === 'undefined') return
   saveDeleteHistoryItemShortcut(shortcut)
 }
 
@@ -467,6 +517,7 @@ export function prefGetClearHistoryShortcut() {
 }
 
 export function prefSetClearHistoryShortcut(shortcut: string) {
+  if (typeof saveClearHistoryShortcut === 'undefined') return
   saveClearHistoryShortcut(shortcut)
 }
 
@@ -479,6 +530,7 @@ export function prefGetTogglePreviewShortcut() {
 }
 
 export function prefSetTogglePreviewShortcut(shortcut: string) {
+  if (typeof saveTogglePreviewShortcut === 'undefined') return
   saveTogglePreviewShortcut(shortcut)
 }
 
@@ -488,6 +540,7 @@ export function prefGetShowMoreActionsShortcut() {
 }
 
 export function prefSetShowMoreActionsShortcut(shortcut: string) {
+  if (typeof saveShowMoreActionsShortcut === 'undefined') return
   saveShowMoreActionsShortcut(shortcut)
 }
 
@@ -497,6 +550,7 @@ export function prefGetZoomUIInShortcut() {
 }
 
 export function prefSetZoomUIInShortcut(shortcut: string) {
+  if (typeof saveZoomUIInShortcut === 'undefined') return
   saveZoomUIInShortcut(shortcut)
 }
 
@@ -506,6 +560,7 @@ export function prefGetZoomUIOutShortcut() {
 }
 
 export function prefSetZoomUIOutShortcut(shortcut: string) {
+  if (typeof saveZoomUIOutShortcut === 'undefined') return
   saveZoomUIOutShortcut(shortcut)
 }
 
@@ -515,6 +570,7 @@ export function prefGetZoomUIResetShortcut() {
 }
 
 export function prefSetZoomUIResetShortcut(shortcut: string) {
+  if (typeof saveZoomUIResetShortcut === 'undefined') return
   saveZoomUIResetShortcut(shortcut)
 }
 
@@ -524,6 +580,7 @@ export function prefGetOpenSettingsShortcut() {
 }
 
 export function prefSetOpenSettingsShortcut(shortcut: string) {
+  if (typeof saveOpenSettingsShortcut === 'undefined') return
   saveOpenSettingsShortcut(shortcut)
 }
 
@@ -533,22 +590,27 @@ export function prefGetToggleFavoriteShortcut() {
 }
 
 export function prefSetToggleFavoriteShortcut(shortcut: string) {
+  if (typeof saveToggleFavoriteShortcut === 'undefined') return
   saveToggleFavoriteShortcut(shortcut)
 }
 
 export function prefSetShowIconInMenuBar(showIcon: boolean) {
+  if (typeof saveShowIconInMenuBar === 'undefined') return
   saveShowIconInMenuBar(showIcon)
 }
 
 export function prefGetShowIconInMenuBar() {
+  if (typeof shouldShowIconInMenuBar === 'undefined') return true
   return shouldShowIconInMenuBar()
 }
 
 export function prefIsShowIconInMenuBarManaged() {
+  if (typeof isShowIconInMenuBarManaged === 'undefined') return false
   return isShowIconInMenuBarManaged()
 }
 
 export function prefGetAppsToIgnore(): string[] {
+  if (typeof getAppsToIgnore === 'undefined') return []
   let apps = getAppsToIgnore();
   if (apps === "") {
     return []
@@ -557,26 +619,32 @@ export function prefGetAppsToIgnore(): string[] {
 }
 
 export function prefSetAppsToIgnore(apps: string[]) {
+  if (typeof setAppsToIgnore === 'undefined') return
   setAppsToIgnore(apps.join(","))
 }
 
 export function prefIsAppsToIgnoreManaged() {
+  if (typeof isAppsToIgnoreManaged === 'undefined') return false
   return isAppsToIgnoreManaged()
 }
 
 export function prefGetCopyTextFromImageShortcut() {
+  if (typeof getCopyTextFromImageShortcut === 'undefined') return 'Cmd+Shift+T'
   return getCopyTextFromImageShortcut()
 }
 
 export function prefSetCopyTextFromImageShortcut(shortcut: string) {
+  if (typeof saveCopyTextFromImageShortcut === 'undefined') return
   saveCopyTextFromImageShortcut(shortcut)
 }
 
 export function prefGetCopyAndMergeEnabled() {
+  if (typeof isCopyAndMergeEnabled === 'undefined') return false
   return isCopyAndMergeEnabled()
 }
 
 export function prefSetCopyAndMergeEnabled(enabled: boolean) {
+  if (typeof saveCopyAndMergeEnabled === 'undefined') return
   saveCopyAndMergeEnabled(enabled)
 }
 
@@ -586,6 +654,7 @@ export enum CopyAndMergeSeparator {
 }
 
 export function prefGetCopyAndMergeSeparator(): CopyAndMergeSeparator {
+  if (typeof getCopyAndMergeSeparator === 'undefined') return CopyAndMergeSeparator.LINE
   let separator = getCopyAndMergeSeparator();
   if (separator === " ") {
     return CopyAndMergeSeparator.SPACE
@@ -594,14 +663,17 @@ export function prefGetCopyAndMergeSeparator(): CopyAndMergeSeparator {
 }
 
 export function prefSetCopyAndMergeSeparator(separator: CopyAndMergeSeparator) {
+  if (typeof saveCopyAndMergeSeparator === 'undefined') return
   saveCopyAndMergeSeparator(separator)
 }
 
 export function prefGetCopyToClipboardAfterMerge() {
+  if (typeof shouldCopyToClipboardAfterMerge === 'undefined') return false
   return shouldCopyToClipboardAfterMerge()
 }
 
 export function prefSetCopyToClipboardAfterMerge(copy: boolean) {
+  if (typeof saveCopyToClipboardAfterMerge === 'undefined') return
   saveCopyToClipboardAfterMerge(copy)
 }
 
@@ -619,14 +691,17 @@ export function prefGetQuickPasteShortcuts(): string[] {
 }
 
 export function prefGetClearHistoryOnQuit() {
+  if (typeof shouldClearHistoryOnQuit === 'undefined') return false
   return shouldClearHistoryOnQuit()
 }
 
 export function prefSetClearHistoryOnQuit(clear: boolean) {
+  if (typeof saveClearHistoryOnQuit === 'undefined') return
   saveClearHistoryOnQuit(clear)
 }
 
 export function prefIsClearHistoryOnQuitManaged() {
+  if (typeof isClearHistoryOnQuitManaged === 'undefined') return false
   return isClearHistoryOnQuitManaged()
 }
 
@@ -639,42 +714,52 @@ export function prefGetClearHistoryOnMacReboot() {
 }
 
 export function prefSetClearHistoryOnMacReboot(clear: boolean) {
+  if (typeof saveClearHistoryOnMacReboot === 'undefined') return
   saveClearHistoryOnMacReboot(clear)
 }
 
 export function prefIsClearHistoryOnMacRebootManaged() {
+  if (typeof isClearHistoryOnMacRebootManaged === 'undefined') return false
   return isClearHistoryOnMacRebootManaged()
 }
 
 export function prefGetNavigateToFirstItemShortcut() {
+  if (typeof getNavigateToFirstItemShortcut === 'undefined') return "Home"
   return getNavigateToFirstItemShortcut()
 }
 
 export function prefSetNavigateToFirstItemShortcut(shortcut: string) {
+  if (typeof saveNavigateToFirstItemShortcut === 'undefined') return
   saveNavigateToFirstItemShortcut(shortcut)
 }
 
 export function prefGetNavigateToLastItemShortcut() {
+  if (typeof getNavigateToLastItemShortcut === 'undefined') return "End"
   return getNavigateToLastItemShortcut()
 }
 
 export function prefSetNavigateToLastItemShortcut(shortcut: string) {
+  if (typeof saveNavigateToLastItemShortcut === 'undefined') return
   saveNavigateToLastItemShortcut(shortcut)
 }
 
 export function prefGetNavigateToNextGroupOfItemsShortcut() {
+  if (typeof getNavigateToNextGroupOfItemsShortcut === 'undefined') return "PageDown"
   return getNavigateToNextGroupOfItemsShortcut()
 }
 
 export function prefSetNavigateToNextGroupOfItemsShortcut(shortcut: string) {
+  if (typeof saveNavigateToNextGroupOfItemsShortcut === 'undefined') return
   saveNavigateToNextGroupOfItemsShortcut(shortcut)
 }
 
 export function prefGetNavigateToPrevGroupOfItemsShortcut() {
+  if (typeof getNavigateToPrevGroupOfItemsShortcut === 'undefined') return "PageUp"
   return getNavigateToPrevGroupOfItemsShortcut()
 }
 
 export function prefSetNavigateToPrevGroupOfItemsShortcut(shortcut: string) {
+  if (typeof saveNavigateToPrevGroupOfItemsShortcut === 'undefined') return
   saveNavigateToPrevGroupOfItemsShortcut(shortcut)
 }
 
@@ -720,26 +805,32 @@ export function prefSetShowPreviewForLinks(show: boolean) {
 }
 
 export function prefShouldShowPreviewForLinks() {
+  if (typeof shouldShowPreviewForLinks === 'undefined') return true
   return shouldShowPreviewForLinks()
 }
 
 export function prefIsShowPreviewForLinksManaged() {
+  if (typeof isShowPreviewForLinksManaged === 'undefined') return false
   return isShowPreviewForLinksManaged()
 }
 
 export function prefGetSaveImageAsFileShortcut() {
+  if (typeof getSaveImageAsFileShortcut === 'undefined') return "Cmd+S"
   return getSaveImageAsFileShortcut()
 }
 
 export function prefSetSaveImageAsFileShortcut(shortcut: string) {
+  if (typeof saveSaveImageAsFileShortcut === 'undefined') return
   saveSaveImageAsFileShortcut(shortcut)
 }
 
 export function prefGetPauseResumeShortcut() {
+  if (typeof getPauseResumeShortcut === 'undefined') return "Cmd+P"
   return getPauseResumeShortcut()
 }
 
 export function prefSetPauseResumeShortcut(shortcut: string) {
+  if (typeof savePauseResumeShortcut === 'undefined') return
   savePauseResumeShortcut(shortcut)
 }
 
@@ -748,14 +839,17 @@ export function prefSetUpdateHistoryAfterAction(update: boolean) {
 }
 
 export function prefShouldUpdateHistoryAfterAction() {
+  if (typeof shouldUpdateHistoryAfterAction === 'undefined') return true
   return shouldUpdateHistoryAfterAction()
 }
 
 export function prefSetRenameItemShortcut(shortcut: string) {
+  if (typeof saveRenameItemShortcut === 'undefined') return
   saveRenameItemShortcut(shortcut)
 }
 
 export function prefGetRenameItemShortcut() {
+  if (typeof getRenameItemShortcut === 'undefined') return "F2"
   return getRenameItemShortcut()
 }
 
@@ -781,6 +875,7 @@ export function prefSetPasteOnClick(paste: boolean) {
 }
 
 export function prefShouldPlaySoundOnCopy() {
+  if (typeof shouldPlaySoundOnCopy === 'undefined') return false
   return shouldPlaySoundOnCopy()
 }
 
@@ -789,6 +884,7 @@ export function prefSetPlaySoundOnCopy(play: boolean) {
 }
 
 export function prefIsPlaySoundOnCopyManaged() {
+  if (typeof isPlaySoundOnCopyManaged === 'undefined') return false
   return isPlaySoundOnCopyManaged()
 }
 
@@ -810,6 +906,7 @@ export function prefGetMakeLowerCaseShortcut() {
 }
 
 export function prefSetMakeLowerCaseShortcut(shortcut: string) {
+  if (typeof saveMakeLowerCaseShortcut === 'undefined') return
   saveMakeLowerCaseShortcut(shortcut)
 }
 
@@ -819,6 +916,7 @@ export function prefGetMakeUpperCaseShortcut() {
 }
 
 export function prefSetMakeUpperCaseShortcut(shortcut: string) {
+  if (typeof saveMakeUpperCaseShortcut === 'undefined') return
   saveMakeUpperCaseShortcut(shortcut)
 }
 
@@ -828,6 +926,7 @@ export function prefGetCapitalizeShortcut() {
 }
 
 export function prefSetCapitalizeShortcut(shortcut: string) {
+  if (typeof saveCapitalizeShortcut === 'undefined') return
   saveCapitalizeShortcut(shortcut)
 }
 
@@ -837,6 +936,7 @@ export function prefGetSentenceCaseShortcut() {
 }
 
 export function prefSetSentenceCaseShortcut(shortcut: string) {
+  if (typeof saveSentenceCaseShortcut === 'undefined') return
   saveSentenceCaseShortcut(shortcut)
 }
 
@@ -846,6 +946,7 @@ export function prefGetRemoveEmptyLinesShortcut() {
 }
 
 export function prefSetRemoveEmptyLinesShortcut(shortcut: string) {
+  if (typeof saveRemoveEmptyLinesShortcut === 'undefined') return
   saveRemoveEmptyLinesShortcut(shortcut)
 }
 
@@ -855,6 +956,7 @@ export function prefGetStripAllWhitespacesShortcut() {
 }
 
 export function prefSetStripAllWhitespacesShortcut(shortcut: string) {
+  if (typeof saveStripAllWhitespacesShortcut === 'undefined') return
   saveStripAllWhitespacesShortcut(shortcut)
 }
 
@@ -864,6 +966,7 @@ export function prefGetTrimSurroundingWhitespacesShortcut() {
 }
 
 export function prefSetTrimSurroundingWhitespacesShortcut(shortcut: string) {
+  if (typeof saveTrimSurroundingWhitespacesShortcut === 'undefined') return
   saveTrimSurroundingWhitespacesShortcut(shortcut)
 }
 
@@ -876,6 +979,7 @@ export function prefGetToggleFilterShortcut() {
 }
 
 export function prefSetToggleFilterShortcut(shortcut: string) {
+  if (typeof saveToggleFilterShortcut === 'undefined') return
   saveToggleFilterShortcut(shortcut)
 }
 
@@ -884,6 +988,7 @@ export function prefSetCopyOnDoubleClick(copy: boolean) {
 }
 
 export function prefShouldCopyOnDoubleClick() {
+  if (typeof shouldCopyOnDoubleClick === 'undefined') return true
   return shouldCopyOnDoubleClick()
 }
 
@@ -892,5 +997,6 @@ export function prefSetCopyOnNumberAction(copy: boolean) {
 }
 
 export function prefShouldCopyOnNumberAction() {
+  if (typeof shouldCopyOnNumberAction === 'undefined') return true
   return shouldCopyOnNumberAction()
 }
