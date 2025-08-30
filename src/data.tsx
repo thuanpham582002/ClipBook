@@ -184,6 +184,28 @@ export async function loadHistory() {
   // }
 
   history = await getAllClips()
+  
+  // Migrate existing items to ensure they have the new timestamp fields
+  let needsMigration = false
+  for (const item of history) {
+    if (!item.firstTimeCopy || !item.lastTimeCopy || item.numberOfCopies === undefined) {
+      // Initialize missing fields with default values
+      if (!item.firstTimeCopy) item.firstTimeCopy = new Date()
+      if (!item.lastTimeCopy) item.lastTimeCopy = item.firstTimeCopy
+      if (item.numberOfCopies === undefined) item.numberOfCopies = 1
+      needsMigration = true
+    }
+  }
+  
+  // Update the database with migrated items if needed
+  if (needsMigration) {
+    for (const item of history) {
+      if (item.id) {
+        await updateClip(item.id, item)
+      }
+    }
+  }
+  
   sortHistory(sortType, history)
   requestHistoryUpdate()
 }
@@ -462,13 +484,25 @@ export async function clear(keepFavorites: boolean): Promise<Clip[]> {
 export function sortHistory(type: SortHistoryType, history: Clip[]) {
   switch (type) {
     case SortHistoryType.TimeOfFirstCopy:
-      history.sort((a, b) => b.firstTimeCopy.getTime() - a.firstTimeCopy.getTime())
+      history.sort((a, b) => {
+        const aTime = a.firstTimeCopy?.getTime() || 0
+        const bTime = b.firstTimeCopy?.getTime() || 0
+        return bTime - aTime
+      })
       break
     case SortHistoryType.TimeOfLastCopy:
-      history.sort((a, b) => b.lastTimeCopy.getTime() - a.lastTimeCopy.getTime())
+      history.sort((a, b) => {
+        const aTime = a.lastTimeCopy?.getTime() || 0
+        const bTime = b.lastTimeCopy?.getTime() || 0
+        return bTime - aTime
+      })
       break
     case SortHistoryType.NumberOfCopies:
-      history.sort((a, b) => b.numberOfCopies - a.numberOfCopies)
+      history.sort((a, b) => {
+        const aCount = a.numberOfCopies || 1
+        const bCount = b.numberOfCopies || 1
+        return bCount - aCount
+      })
       break
     case SortHistoryType.Size:
       history.sort((a, b) => compareItemsSize(a, b))

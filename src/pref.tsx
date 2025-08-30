@@ -212,6 +212,10 @@ export function prefSetLanguage(language: LanguageCode) {
 }
 
 export function prefGetLanguage() : LanguageCode {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getLanguage === 'undefined') {
+    return LanguageCode.EN_US; // Default to English US
+  }
   return getLanguage() as LanguageCode
 }
 
@@ -340,6 +344,10 @@ export function prefSetCloseAppShortcut3(shortcut: string) {
 }
 
 export function prefGetSelectNextItemShortcut() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getSelectNextItemShortcut === 'undefined') {
+    return 'ArrowDown'; // Default shortcut
+  }
   return getSelectNextItemShortcut()
 }
 
@@ -348,6 +356,10 @@ export function prefSetSelectNextItemShortcut(shortcut: string) {
 }
 
 export function prefGetSelectPreviousItemShortcut() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getSelectPreviousItemShortcut === 'undefined') {
+    return 'ArrowUp'; // Default shortcut
+  }
   return getSelectPreviousItemShortcut()
 }
 
@@ -356,6 +368,10 @@ export function prefSetSelectPreviousItemShortcut(shortcut: string) {
 }
 
 export function prefGetPasteSelectedItemToActiveAppShortcut() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getPasteSelectedItemToActiveAppShortcut === 'undefined') {
+    return ''; // Default to empty string
+  }
   return getPasteSelectedItemToActiveAppShortcut()
 }
 
@@ -420,10 +436,12 @@ export function prefSetOpenInDefaultAppShortcut(shortcut: string) {
 }
 
 export function prefGetCopyToClipboardShortcut() {
+  if (typeof getCopyToClipboardShortcut === 'undefined') return 'Cmd+C'
   return getCopyToClipboardShortcut()
 }
 
 export function prefSetCopyToClipboardShortcut(shortcut: string) {
+  if (typeof saveCopyToClipboardShortcut === 'undefined') return
   saveCopyToClipboardShortcut(shortcut)
 }
 
@@ -444,6 +462,7 @@ export function prefSetDeleteHistoryItemShortcut(shortcut: string) {
 }
 
 export function prefGetClearHistoryShortcut() {
+  if (typeof getClearHistoryShortcut === 'undefined') return 'Cmd+Shift+Delete'
   return getClearHistoryShortcut()
 }
 
@@ -452,6 +471,10 @@ export function prefSetClearHistoryShortcut(shortcut: string) {
 }
 
 export function prefGetTogglePreviewShortcut() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getTogglePreviewShortcut === 'undefined') {
+    return 'Cmd+P'; // Default shortcut for toggle preview
+  }
   return getTogglePreviewShortcut()
 }
 
@@ -460,6 +483,7 @@ export function prefSetTogglePreviewShortcut(shortcut: string) {
 }
 
 export function prefGetShowMoreActionsShortcut() {
+  if (typeof getShowMoreActionsShortcut === 'undefined') return 'Cmd+M'
   return getShowMoreActionsShortcut()
 }
 
@@ -468,6 +492,7 @@ export function prefSetShowMoreActionsShortcut(shortcut: string) {
 }
 
 export function prefGetZoomUIInShortcut() {
+  if (typeof getZoomUIInShortcut === 'undefined') return 'Cmd++'
   return getZoomUIInShortcut()
 }
 
@@ -476,6 +501,7 @@ export function prefSetZoomUIInShortcut(shortcut: string) {
 }
 
 export function prefGetZoomUIOutShortcut() {
+  if (typeof getZoomUIOutShortcut === 'undefined') return 'Cmd+-'
   return getZoomUIOutShortcut()
 }
 
@@ -484,6 +510,7 @@ export function prefSetZoomUIOutShortcut(shortcut: string) {
 }
 
 export function prefGetZoomUIResetShortcut() {
+  if (typeof getZoomUIResetShortcut === 'undefined') return 'Cmd+0'
   return getZoomUIResetShortcut()
 }
 
@@ -492,6 +519,7 @@ export function prefSetZoomUIResetShortcut(shortcut: string) {
 }
 
 export function prefGetOpenSettingsShortcut() {
+  if (typeof getOpenSettingsShortcut === 'undefined') return 'Cmd+,'
   return getOpenSettingsShortcut()
 }
 
@@ -500,6 +528,7 @@ export function prefSetOpenSettingsShortcut(shortcut: string) {
 }
 
 export function prefGetToggleFavoriteShortcut() {
+  if (typeof getToggleFavoriteShortcut === 'undefined') return 'Cmd+F'
   return getToggleFavoriteShortcut()
 }
 
@@ -602,6 +631,10 @@ export function prefIsClearHistoryOnQuitManaged() {
 }
 
 export function prefGetClearHistoryOnMacReboot() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldClearHistoryOnMacReboot === 'undefined') {
+    return false; // Default to false
+  }
   return shouldClearHistoryOnMacReboot()
 }
 
@@ -675,6 +708,10 @@ export function prefSetTreatDigitNumbersAsColor(treat: boolean) {
 }
 
 export function prefShouldTreatDigitNumbersAsColor() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldTreatDigitNumbersAsColor === 'undefined') {
+    return true; // Default to true
+  }
   return shouldTreatDigitNumbersAsColor()
 }
 
@@ -723,6 +760,10 @@ export function prefGetRenameItemShortcut() {
 }
 
 export function prefIsFeedbackProvided() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof isFeedbackProvided === 'undefined') {
+    return false; // Default to false
+  }
   return isFeedbackProvided()
 }
 
@@ -731,6 +772,7 @@ export function prefSetFeedbackProvided(provided: boolean) {
 }
 
 export function prefShouldPasteOnClick() {
+  if (typeof shouldPasteOnClick === 'undefined') return false
   return shouldPasteOnClick()
 }
 
@@ -751,6 +793,10 @@ export function prefIsPlaySoundOnCopyManaged() {
 }
 
 export function prefShouldAlwaysDisplay() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldAlwaysDisplay === 'undefined') {
+    return false; // Default to false
+  }
   return shouldAlwaysDisplay()
 }
 
@@ -759,6 +805,7 @@ export function prefSetAlwaysDisplay(display: boolean) {
 }
 
 export function prefGetMakeLowerCaseShortcut() {
+  if (typeof getMakeLowerCaseShortcut === 'undefined') return 'Cmd+L'
   return getMakeLowerCaseShortcut()
 }
 
@@ -767,6 +814,7 @@ export function prefSetMakeLowerCaseShortcut(shortcut: string) {
 }
 
 export function prefGetMakeUpperCaseShortcut() {
+  if (typeof getMakeUpperCaseShortcut === 'undefined') return 'Cmd+U'
   return getMakeUpperCaseShortcut()
 }
 
@@ -775,6 +823,7 @@ export function prefSetMakeUpperCaseShortcut(shortcut: string) {
 }
 
 export function prefGetCapitalizeShortcut() {
+  if (typeof getCapitalizeShortcut === 'undefined') return 'Cmd+Shift+C'
   return getCapitalizeShortcut()
 }
 
@@ -783,6 +832,7 @@ export function prefSetCapitalizeShortcut(shortcut: string) {
 }
 
 export function prefGetSentenceCaseShortcut() {
+  if (typeof getSentenceCaseShortcut === 'undefined') return 'Cmd+S'
   return getSentenceCaseShortcut()
 }
 
@@ -791,6 +841,7 @@ export function prefSetSentenceCaseShortcut(shortcut: string) {
 }
 
 export function prefGetRemoveEmptyLinesShortcut() {
+  if (typeof getRemoveEmptyLinesShortcut === 'undefined') return 'Cmd+R'
   return getRemoveEmptyLinesShortcut()
 }
 
@@ -799,6 +850,7 @@ export function prefSetRemoveEmptyLinesShortcut(shortcut: string) {
 }
 
 export function prefGetStripAllWhitespacesShortcut() {
+  if (typeof getStripAllWhitespacesShortcut === 'undefined') return 'Cmd+W'
   return getStripAllWhitespacesShortcut()
 }
 
@@ -807,6 +859,7 @@ export function prefSetStripAllWhitespacesShortcut(shortcut: string) {
 }
 
 export function prefGetTrimSurroundingWhitespacesShortcut() {
+  if (typeof getTrimSurroundingWhitespacesShortcut === 'undefined') return 'Cmd+T'
   return getTrimSurroundingWhitespacesShortcut()
 }
 
@@ -815,6 +868,10 @@ export function prefSetTrimSurroundingWhitespacesShortcut(shortcut: string) {
 }
 
 export function prefGetToggleFilterShortcut() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof getToggleFilterShortcut === 'undefined') {
+    return 'Cmd+F'; // Default shortcut for filter toggle
+  }
   return getToggleFilterShortcut()
 }
 

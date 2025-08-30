@@ -22,7 +22,10 @@ type StatusBarProps = {
 export default function StatusBar(props: StatusBarProps) {
   const {t} = useTranslation()
   
-  const [updateAvailable, setUpdateAvailable] = useState(isUpdateAvailable)
+  const [updateAvailable, setUpdateAvailable] = useState(
+    // Fallback for web development mode when native functions aren't available
+    typeof isUpdateAvailable !== 'undefined' ? isUpdateAvailable() : false
+  )
 
   function handleUpdateAvailable() {
     setUpdateAvailable(true)

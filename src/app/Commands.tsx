@@ -781,21 +781,21 @@ export default function Commands(props: CommandsProps) {
                     <ShortcutLabel shortcut={prefGetTogglePreviewShortcut()}/>
                   </CommandShortcut>
                 </CommandItem>
-                <CommandItem onSelect={handleZoomIn} disabled={!canZoomIn()}>
+                <CommandItem onSelect={handleZoomIn} disabled={!(typeof canZoomIn !== 'undefined' ? canZoomIn() : true)}>
                   <ZoomIn className="mr-2 h-5 w-5"/>
                   <span>{t('commands.zoomIn')}</span>
                   <CommandShortcut className="flex flex-row">
                     <ShortcutLabel shortcut={prefGetZoomUIInShortcut()}/>
                   </CommandShortcut>
                 </CommandItem>
-                <CommandItem onSelect={handleZoomOut} disabled={!canZoomOut()}>
+                <CommandItem onSelect={handleZoomOut} disabled={!(typeof canZoomOut !== 'undefined' ? canZoomOut() : true)}>
                   <ZoomOut className="mr-2 h-5 w-5"/>
                   <span>{t('commands.zoomOut')}</span>
                   <CommandShortcut className="flex flex-row">
                     <ShortcutLabel shortcut={prefGetZoomUIOutShortcut()}/>
                   </CommandShortcut>
                 </CommandItem>
-                <CommandItem onSelect={handleResetZoom} disabled={!canResetZoom()}>
+                <CommandItem onSelect={handleResetZoom} disabled={!(typeof canResetZoom !== 'undefined' ? canResetZoom() : true)}>
                   <Undo2Icon className="mr-2 h-5 w-5"/>
                   <span>{t('commands.resetZoom')}</span>
                   <CommandShortcut className="flex flex-row">

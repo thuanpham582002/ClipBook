@@ -22,7 +22,10 @@ i18n
 export function updateLanguage() {
   const language = prefGetLanguage()
   i18n.changeLanguage(language).then(() => {
-    onLanguageChanged()
+    // Fallback for web development mode when native functions aren't available
+    if (typeof onLanguageChanged !== 'undefined') {
+      onLanguageChanged()
+    }
   })
 }
 

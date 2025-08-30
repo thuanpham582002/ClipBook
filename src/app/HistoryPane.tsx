@@ -13,21 +13,12 @@ import {
   deleteHistoryItem,
   findItem,
   getDefaultApp,
-  isConsecutiveDuplicate,
-  updateLastCopiedState,
-  getCopyCount,
-  getFirstCopyTime,
-  getLastCopyTime,
   getFileOrImagePath,
   getFirstSelectedHistoryItem,
-  getFirstSelectedTimelineItem,
   getFirstSelectedHistoryItemIndex,
   getHistoryItem,
   getHistoryItemIndex,
   getHistoryItems,
-  getTimelineItems,
-  getTimelineItem,
-  TimelineEntry,
   getLastSelectedItemIndex,
   getPreviewVisibleState,
   getSelectedHistoryItemIndices,
@@ -142,7 +133,7 @@ type HistoryPaneProps = {
 let treatDigitNumbersAsColor = prefShouldTreatDigitNumbersAsColor()
 
 export default function HistoryPane(props: HistoryPaneProps) {
-  const [history, setHistory] = useState<TimelineEntry[]>([])
+  const [history, setHistory] = useState<Clip[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
   const previewPanelRef = useRef<ImperativePanelHandle>(null);
@@ -165,7 +156,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   useEffect(() => {
     loadHistory().then(() => {
-      setHistory(getTimelineItems())
+      setHistory(getHistoryItems())
     })
   }, []);
 
@@ -185,15 +176,11 @@ export default function HistoryPane(props: HistoryPaneProps) {
                                   rtf: string,
                                   html: string) {
     
-    // Check if this is a consecutive duplicate - if so, skip entirely
-    if (isConsecutiveDuplicate(content, imageFileName, filePath)) {
-      return; // Skip this copy operation
-    }
-    
     let item = findItem(content, imageFileName, filePath)
     if (item) {
-      // Add new timestamp to existing item
-      item.copyTimes.push(new Date())
+      // Update existing item with new copy time and count
+      item.lastTimeCopy = new Date()
+      item.numberOfCopies += 1
       await updateHistoryItem(item.id!, item)
     } else {
       item = await addHistoryItem(
@@ -213,13 +200,10 @@ export default function HistoryPane(props: HistoryPaneProps) {
           rtf,
           html)
     }
-    setHistory([...getTimelineItems()])
+    setHistory([...getHistoryItems()])
 
     // When the history is changed, we need to reset the next item index for paste.
     resetPasteNextItemIndex()
-
-    // Update global state for next consecutive duplicate check
-    updateLastCopiedState(content, imageFileName, filePath)
 
     // The added item might not be in the visible history list if it doesn't match the search query.
     let index = getHistoryItemIndex(item)
@@ -246,9 +230,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
                                     isFolder: boolean) {
     if (history.length > 0) {
       // Find the first non-favorite item to merge with.
-      let targetItem = history[0].clip
+      let targetItem = history[0]
       for (let i = 0; i < history.length; i++) {
-        const clip = history[i].clip
+        const clip = history[i]
         if (!clip.favorite) {
           targetItem = clip
           break
@@ -262,14 +246,17 @@ export default function HistoryPane(props: HistoryPaneProps) {
           targetItem.content += prefGetCopyAndMergeSeparator() + content
 
           if (prefGetCopyToClipboardAfterMerge()) {
-            copyToClipboardAfterMerge(targetItem.content)
+            // Fallback for web development mode when native functions aren't available
+            if (typeof copyToClipboardAfterMerge !== 'undefined') {
+              copyToClipboardAfterMerge(targetItem.content)
+            }
           }
 
           await updateHistoryItem(targetItem.id!, targetItem)
-          let items = getTimelineItems()
+          let items = getHistoryItems()
           setHistory([...items])
           resetPasteNextItemIndex()
-          let index = items.findIndex(i => i.clip.id === targetItem.id)
+          let index = items.findIndex(i => i.id === targetItem.id)
           setSelectedHistoryItemIndex(index)
           setSelectedItemIndices(getSelectedHistoryItemIndices())
           scrollToLastSelectedItem()
@@ -297,10 +284,10 @@ export default function HistoryPane(props: HistoryPaneProps) {
   async function clearHistory() {
     let keepFavorites = prefGetKeepFavoritesOnClearHistory()
     let clips = await clear(keepFavorites)
-    setHistory(getTimelineItems())
+    setHistory(getHistoryItems())
     resetPasteNextItemIndex()
     // If the history is not empty, update the preview text to the new active item.
-    let newHistory = getTimelineItems()
+    let newHistory = getHistoryItems()
     if (newHistory.length > 0) {
       let activeHistoryItemIndex = getFirstSelectedHistoryItemIndex()
       if (activeHistoryItemIndex >= newHistory.length) {
@@ -324,7 +311,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
     let newValue = prefShouldTreatDigitNumbersAsColor()
     if (treatDigitNumbersAsColor !== newValue) {
       if (await updateHistoryItemTypes()) {
-        setHistory([...getTimelineItems()])
+        setHistory([...getHistoryItems()])
       }
       treatDigitNumbersAsColor = newValue
     }
@@ -843,15 +830,15 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   async function pasteItem(item: Clip, keepHistory: boolean = false, pasteObject: boolean = false) {
-    item.copyTimes.push(new Date())
-    // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always adding to copyTimes
+    item.lastTimeCopy = new Date(); item.numberOfCopies += 1
+    // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always updating copy statistics
     await updateHistoryItem(item.id!, item)
 
     let rtf = pasteObject ? getRTF(item) : ""
     let html = pasteObject ? getHTML(item) : ""
     pasteItemInFrontApp(item.content, rtf, html, getImageFileName(item), getFilePath(item))
 
-    setHistory([...getTimelineItems()])
+    setHistory([...getHistoryItems()])
 
     // The added item might not be in the visible history list if it doesn't match the search query.
     let index = getHistoryItemIndex(item)
@@ -866,12 +853,12 @@ export default function HistoryPane(props: HistoryPaneProps) {
   async function pasteFileItems(items: Clip[], keepHistory: boolean = false) {
     let filePaths = []
     for (const item of items) {
-      item.copyTimes.push(new Date())
-      // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always adding to copyTimes
+      item.lastTimeCopy = new Date(); item.numberOfCopies += 1
+      // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always updating copy statistics
       await updateHistoryItem(item.id!, item)
       filePaths.push(getFilePath(item))
     }
-    setHistory([...getTimelineItems()])
+    setHistory([...getHistoryItems()])
 
     pasteFilesInFrontApp(filePaths.join(":"))
 
@@ -961,9 +948,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handlePastePath() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && timelineEntry.clip.type === ClipType.File) {
-        pasteItemInFrontApp(getFilePath(timelineEntry.clip), "", "", "", "")
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && selectedHistoryItem.type === ClipType.File) {
+        pasteItemInFrontApp(getFilePath(selectedHistoryItem), "", "", "", "")
       }
     }
     focusSearchField()
@@ -971,7 +958,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handlePastePathByIndex(index: number) {
     if (index < history.length) {
-      let item = history[index].clip
+      let item = history[index]
       if (item.type === ClipType.File) {
         pasteItemInFrontApp(getFilePath(item), "", "", "", "")
       }
@@ -980,9 +967,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handleCopyPathToClipboard() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && timelineEntry.clip.type === ClipType.File) {
-        copyToClipboard(timelineEntry.clip.filePath, "", "", "", "", false)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && selectedHistoryItem.type === ClipType.File) {
+        copyToClipboard(selectedHistoryItem.filePath, "", "", "", "", false)
       }
     }
     focusSearchField()
@@ -1009,7 +996,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handlePasteByIndex(index: number) {
     if (index < history.length) {
-      let item = history[index].clip
+      let item = history[index]
       if (prefShouldCopyOnDoubleClick()) {
         await copyItemToClipboard(item)
         if (!prefShouldAlwaysDisplay()) {
@@ -1063,9 +1050,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   async function handleSplit() {
-    const timelineEntry = getFirstSelectedTimelineItem()
-    if (timelineEntry && isTextItem(timelineEntry.clip)) {
-      let selectedItem = timelineEntry.clip
+    const selectedHistoryItem = getFirstSelectedHistoryItem()
+    if (selectedHistoryItem && isTextItem(selectedHistoryItem)) {
+      let selectedItem = selectedHistoryItem
       // Check if the item content has text with line breaks and has at least two lines.
       let text = selectedItem.content
       let lines = text.split(/\r?\n/).filter(line => line.trim() !== "")
@@ -1077,10 +1064,10 @@ export default function HistoryPane(props: HistoryPaneProps) {
           let now = new Date()
           // Add one millisecond to the time to make sure the items are not identical.
           now.setMilliseconds(now.getMilliseconds() - (i * 100))
-          item.copyTimes = [now]
+          item.firstTimeCopy = now; item.lastTimeCopy = now; item.numberOfCopies = 1
           items.push(item)
         }
-        setHistory([...getTimelineItems()])
+        setHistory([...getHistoryItems()])
 
         clearSelection()
         for (let i = 0; i < items.length; i++) {
@@ -1116,8 +1103,8 @@ export default function HistoryPane(props: HistoryPaneProps) {
     if (getSelectedHistoryItemIndices().length > 1) {
       return
     }
-    const timelineEntry = getFirstSelectedTimelineItem()
-    if (!timelineEntry || !isTextItem(timelineEntry.clip)) {
+    const selectedHistoryItem = getFirstSelectedHistoryItem()
+    if (!selectedHistoryItem || !isTextItem(selectedHistoryItem)) {
       return
     }
     if (!isPreviewVisible()) {
@@ -1146,15 +1133,16 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   async function copyItemToClipboard(item: Clip, pasteObject: boolean = false) {
-    item.copyTimes.push(new Date())
-    // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always adding to copyTimes
+    // Update the copy statistics using the new database structure
+    item.lastTimeCopy = new Date()
+    item.numberOfCopies += 1
     await updateHistoryItem(item.id!, item)
 
     let rtf = pasteObject ? getRTF(item) : ""
     let html = pasteObject ? getHTML(item) : ""
     copyToClipboard(item.content, rtf, html, getImageFileName(item), getFilePath(item), true)
 
-    setHistory([...getTimelineItems()])
+    setHistory([...getHistoryItems()])
 
     // Note: Preserve current selection instead of changing it during copy operations
     // This prevents unwanted scrolling and maintains the user's current view state
@@ -1162,9 +1150,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handleCopyToClipboard() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry) {
-        await copyItemToClipboard(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem) {
+        await copyItemToClipboard(selectedHistoryItem)
       }
     }
     focusSearchField()
@@ -1172,18 +1160,18 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   async function handleCopyObjectToClipboard() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (!timelineEntry) return
-      let item = timelineEntry.clip
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (!selectedHistoryItem) return
+      let item = selectedHistoryItem
       await copyItemToClipboard(item, true)
     }
     focusSearchField()
   }
 
   async function handleCopyToClipboardByIndex(index: number) {
-    const timelineEntry = getTimelineItem(index)
-    if (timelineEntry) {
-      await copyItemToClipboard(timelineEntry.clip)
+    const selectedHistoryItem = getHistoryItem(index)
+    if (selectedHistoryItem) {
+      await copyItemToClipboard(selectedHistoryItem)
     }
   }
 
@@ -1196,18 +1184,18 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleCopyTextFromImage() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry) {
-        copyTextFromImage(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem) {
+        copyTextFromImage(selectedHistoryItem)
       }
     }
     focusSearchField()
   }
 
   function handleCopyTextFromImageByIndex(index: number) {
-    const timelineEntry = getTimelineItem(index)
-    if (timelineEntry) {
-      copyTextFromImage(timelineEntry.clip)
+    const selectedHistoryItem = getHistoryItem(index)
+    if (selectedHistoryItem) {
+      copyTextFromImage(selectedHistoryItem)
     }
   }
 
@@ -1219,9 +1207,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleOpenInBrowser() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry) {
-        openItemInBrowser(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem) {
+        openItemInBrowser(selectedHistoryItem)
       }
     }
     focusSearchField()
@@ -1229,9 +1217,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleShowInFinder() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && timelineEntry.clip.type === ClipType.File) {
-        showInFinder(getFilePath(timelineEntry.clip))
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && selectedHistoryItem.type === ClipType.File) {
+        showInFinder(getFilePath(selectedHistoryItem))
       }
     }
     focusSearchField()
@@ -1270,9 +1258,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handlePreviewLink() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry) {
-        previewLinkInApp(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem) {
+        previewLinkInApp(selectedHistoryItem)
       }
     }
     focusSearchField()
@@ -1289,18 +1277,18 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleQuickLook() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry) {
-        quickLook(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem) {
+        quickLook(selectedHistoryItem)
       }
     }
   }
 
   function handleOpenInDefaultApp() {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && ((timelineEntry.clip.type === ClipType.File && !timelineEntry.clip.fileFolder) || timelineEntry.clip.type === ClipType.Image)) {
-        let filePath = getFileOrImagePath(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && ((selectedHistoryItem.type === ClipType.File && !selectedHistoryItem.fileFolder) || selectedHistoryItem.type === ClipType.Image)) {
+        let filePath = getFileOrImagePath(selectedHistoryItem)
         if (filePath) {
           let defaultApp = getDefaultApp(filePath)
           if (defaultApp) {
@@ -1313,9 +1301,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleOpenInApp(appInfo: AppInfo | undefined) {
     if (appInfo) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && (timelineEntry.clip.type === ClipType.File || timelineEntry.clip.type === ClipType.Image)) {
-        let filePath = getFileOrImagePath(timelineEntry.clip)
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && (selectedHistoryItem.type === ClipType.File || selectedHistoryItem.type === ClipType.Image)) {
+        let filePath = getFileOrImagePath(selectedHistoryItem)
         if (filePath) {
           openInApp(filePath, appInfo.path)
         }
@@ -1339,9 +1327,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   function handleOpenWithApp(appPath: string) {
     if (getSelectedHistoryItemIndices().length === 1) {
-      const timelineEntry = getFirstSelectedTimelineItem()
-      if (timelineEntry && (timelineEntry.clip.type === ClipType.File || timelineEntry.clip.type === ClipType.Image)) {
-        let filePath = getFileOrImagePath(timelineEntry.clip);
+      const selectedHistoryItem = getFirstSelectedHistoryItem()
+      if (selectedHistoryItem && (selectedHistoryItem.type === ClipType.File || selectedHistoryItem.type === ClipType.Image)) {
+        let filePath = getFileOrImagePath(selectedHistoryItem);
         if (filePath) {
           openInApp(filePath, appPath)
         }
@@ -1388,7 +1376,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
     }
 
     // If the history is not empty, update the preview text to the new active item.
-    let items = getTimelineItems()
+    let items = getHistoryItems()
     if (items.length > 0) {
       setSelectedItemIndices(getSelectedHistoryItemIndices())
     }
@@ -1457,7 +1445,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
   function handleSearchQueryChange(searchQuery: string, skipSelection: boolean = false): void {
     setSearchQuery(searchQuery)
     setFilterQuery(searchQuery)
-    let items = getTimelineItems();
+    let items = getHistoryItems();
     setHistory(items)
 
     if (!skipSelection) {
@@ -1511,16 +1499,16 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   function handleSaveImageAsFile() {
-    const timelineEntry = getFirstSelectedTimelineItem()
-    if (timelineEntry && timelineEntry.clip.type === ClipType.Image) {
-      saveImageAsFile(timelineEntry.clip.imageFileName!, timelineEntry.clip.imageWidth!, timelineEntry.clip.imageHeight!)
+    const selectedHistoryItem = getFirstSelectedHistoryItem()
+    if (selectedHistoryItem && selectedHistoryItem.type === ClipType.Image) {
+      saveImageAsFile(selectedHistoryItem.imageFileName!, selectedHistoryItem.imageWidth!, selectedHistoryItem.imageHeight!)
     }
     focusSearchField()
   }
 
   async function handleEditHistoryItem(item: Clip) {
     await updateHistoryItem(item.id!, item)
-    setHistory([...getTimelineItems()])
+    setHistory([...getHistoryItems()])
   }
 
   async function handleEditHistoryItems(items: Clip[]) {
@@ -1528,7 +1516,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
       await updateHistoryItem(item.id!, item)
       emitter.emit("UpdateItemById", item.id)
     }
-    setHistory(getTimelineItems())
+    setHistory(getHistoryItems())
     await selectItems(items)
   }
 
@@ -1544,7 +1532,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   function updateHistory() {
-    let history = getTimelineItems()
+    let history = getHistoryItems()
     setHistory([...history])
     if (history.length > 0) {
       setSelectedHistoryItemIndex(0)
@@ -1556,7 +1544,10 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
   (window as any).addClipboardData = addClipboardData;
   (window as any).mergeClipboardData = mergeClipboardData;
-  (window as any).copyToClipboardAfterMerge = copyToClipboardAfterMerge;
+  // Only expose copyToClipboardAfterMerge if it's available (native app mode)
+  if (typeof copyToClipboardAfterMerge !== 'undefined') {
+    (window as any).copyToClipboardAfterMerge = copyToClipboardAfterMerge;
+  }
   (window as any).clearHistory = clearHistory;
   (window as any).activateApp = activateApp;
   (window as any).pasteNextItemToActiveApp = pasteNextItemToActiveApp;
