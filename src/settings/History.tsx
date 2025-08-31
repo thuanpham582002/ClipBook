@@ -48,9 +48,10 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {ChevronsUpDown} from "lucide-react";
+import {ChevronsUpDown, Download, Upload} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import { Trans, useTranslation } from 'react-i18next';
+import {exportAllData, importData, BackupData} from "@/db";
 
 declare const closeSettingsWindow: () => void;
 
@@ -80,6 +81,8 @@ export default function History() {
   const [pasteOnClick, setPasteOnClick] = useState(prefShouldPasteOnClick())
   const [doubleClickStrategy, setDoubleClickStrategy] = useState(prefShouldCopyOnDoubleClick() ? DoubleClickStrategy.COPY : DoubleClickStrategy.PASTE)
   const [numberActionStrategy, setNumberActionStrategy] = useState(prefShouldCopyOnNumberAction() ? NumberActionStrategy.COPY : NumberActionStrategy.PASTE)
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -156,6 +159,81 @@ export default function History() {
   function handleNumberActionStrategyChange(numberActionStrategy: string) {
     setNumberActionStrategy(numberActionStrategy as NumberActionStrategy)
     prefSetCopyOnNumberAction(numberActionStrategy === NumberActionStrategy.COPY)
+  }
+
+  async function handleExportData() {
+    try {
+      setIsExporting(true)
+      const backupData = await exportAllData()
+      
+      // Create download
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+      const filename = `clipbook-backup-${timestamp}.json`
+      
+      // Download file
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      
+      console.log(`✅ Exported ${backupData.clips.length} clips to ${filename}`)
+    } catch (error) {
+      console.error('❌ Export failed:', error)
+      alert(`Export failed: ${error}`)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  async function handleImportData() {
+    try {
+      setIsImporting(true)
+      
+      // Create file input
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0]
+        if (!file) return
+        
+        try {
+          const text = await file.text()
+          const backupData: BackupData = JSON.parse(text)
+          
+          // Confirm before importing
+          const shouldMerge = confirm(`Import ${backupData.clips.length} clips?\n\nOK = Merge with existing data\nCancel = Replace all data`)
+          if (shouldMerge === null) return // User cancelled
+          
+          await importData(backupData, { merge: shouldMerge })
+          
+          alert(`✅ Successfully imported ${backupData.clips.length} clips!`)
+          
+          // Refresh page to show new data
+          if (typeof window !== 'undefined') {
+            window.location.reload()
+          }
+        } catch (error) {
+          console.error('❌ Import failed:', error)
+          alert(`Import failed: ${error}`)
+        }
+      }
+      
+      input.click()
+    } catch (error) {
+      console.error('❌ Import failed:', error)
+      alert(`Import failed: ${error}`)
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   return (
@@ -365,6 +443,39 @@ export default function History() {
               <Switch id="keepFavoritesOnClearAll" checked={keepFavoritesOnClearHistory}
                       onCheckedChange={handleKeepFavoritesOnClearHistoryChange}
                       disabled={prefIsKeepFavoritesOnClearHistoryManaged()}/>
+            </div>
+
+            <hr/>
+
+            <div className="flex items-center justify-between space-x-20 py-1">
+              <Label className="flex flex-col text-base">
+                <span className="">Backup & Restore</span>
+                <span className="text-neutral-500 font-normal text-sm">
+                  Export your clips to backup file or import from backup
+                </span>
+              </Label>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleExportData}
+                  disabled={isExporting}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  {isExporting ? 'Exporting...' : 'Export'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleImportData}
+                  disabled={isImporting}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {isImporting ? 'Importing...' : 'Import'}
+                </Button>
+              </div>
             </div>
 
             <hr/>

@@ -9,6 +9,7 @@ import {
   addSelectedHistoryItemIndex,
   AppInfo,
   checkIfLastItem,
+  checkIfSameContentAsLatest,
   clear,
   clearSelection,
   deleteHistoryItem,
@@ -1140,6 +1141,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
     if (checkIfLastItem(item)) {
       // Skip - don't do anything if it's the last item
       console.log('⏭️ Skipping copy - item is latest')
+    } else if (checkIfSameContentAsLatest(item)) {
+      // Skip - don't create duplicate if content is same as latest item
+      console.log('⏭️ Skipping copy - content same as latest item')
     } else {
       // Not the last item - create new duplicate
       console.log('✨ Creating duplicate - item is not latest')

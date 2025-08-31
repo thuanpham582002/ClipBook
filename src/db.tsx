@@ -124,3 +124,67 @@ export function getRTF(item: Clip): string {
 export function getHTML(item: Clip): string {
   return item && (item.html || "")
 }
+
+// Backup and restore types
+export interface BackupData {
+  version: string;
+  timestamp: string;
+  clips: Clip[];
+  linkPreviews: LinkPreviewDetails[];
+}
+
+// Export all data for backup
+export async function exportAllData(): Promise<BackupData> {
+  const clips = await getAllClips();
+  const linkPreviews = await db.linkPreviews.toArray();
+  
+  return {
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+    clips,
+    linkPreviews
+  };
+}
+
+// Import data from backup
+export async function importData(data: BackupData, options: { merge?: boolean } = {}): Promise<void> {
+  try {
+    // Validate backup data
+    if (!data.clips || !Array.isArray(data.clips)) {
+      throw new Error('Invalid backup data: clips array is required');
+    }
+
+    // Clear existing data if not merging
+    if (!options.merge) {
+      await db.history.clear();
+      await db.linkPreviews.clear();
+    }
+
+    // Import clips
+    if (data.clips.length > 0) {
+      // Convert dates from strings back to Date objects
+      const processedClips = data.clips.map(clip => ({
+        ...clip,
+        copyTime: new Date(clip.copyTime),
+        id: options.merge ? undefined : clip.id // Let DB assign new IDs when merging
+      }));
+
+      await db.history.bulkAdd(processedClips);
+    }
+
+    // Import link previews
+    if (data.linkPreviews && data.linkPreviews.length > 0) {
+      const processedPreviews = data.linkPreviews.map(preview => ({
+        ...preview,
+        id: options.merge ? undefined : preview.id // Let DB assign new IDs when merging
+      }));
+
+      await db.linkPreviews.bulkAdd(processedPreviews);
+    }
+
+    console.log(`✅ Successfully imported ${data.clips.length} clips and ${data.linkPreviews?.length || 0} link previews`);
+  } catch (error) {
+    console.error('❌ Import failed:', error);
+    throw error;
+  }
+}

@@ -356,6 +356,21 @@ export function checkIfLastItem(item: Clip): boolean {
   return item.id === lastItem.id
 }
 
+export function checkIfSameContentAsLatest(item: Clip): boolean {
+  if (history.length === 0) return false
+  
+  // Find the item with the newest copyTime
+  let lastItem = history[0]
+  for (let i = 1; i < history.length; i++) {
+    if (history[i].copyTime > lastItem.copyTime) {
+      lastItem = history[i]
+    }
+  }
+  
+  // Check if the provided item has the same content as the last item
+  return item.content === lastItem.content && item.type === lastItem.type
+}
+
 async function deleteItem(item: Clip) {
   let index = hasItem(item);
   if (index !== -1) {
