@@ -1143,6 +1143,10 @@ export default function HistoryPane(props: HistoryPaneProps) {
     } else {
       // Not the last item - create new duplicate
       console.log('✨ Creating duplicate - item is not latest')
+      
+      // Save current selection indices before creating duplicate
+      let currentSelectedIndices = getSelectedHistoryItemIndices()
+      
       let newItem = await addHistoryItem(
         item.content,
         item.sourceApp,
@@ -1160,6 +1164,15 @@ export default function HistoryPane(props: HistoryPaneProps) {
         item.rtf,
         item.html
       )
+      
+      // After creating duplicate (new item appears at top), 
+      // increment all selection indices by 1 to maintain focus on original items
+      clearSelection()
+      currentSelectedIndices.forEach(index => {
+        addSelectedHistoryItemIndex(index + 1)
+      })
+      setSelectedItemIndices(getSelectedHistoryItemIndices())
+      
       // Use the new item for clipboard operation
       item = newItem
     }
@@ -1170,8 +1183,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
 
     setHistory([...getHistoryItems()])
 
-    // Note: Preserve current selection instead of changing it during copy operations
-    // This prevents unwanted scrolling and maintains the user's current view state
+    // Note: Selection is preserved and adjusted for new duplicate item
   }
 
   async function handleCopyToClipboard() {
