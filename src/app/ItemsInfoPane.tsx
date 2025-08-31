@@ -20,11 +20,11 @@ export default function ItemsInfoPane(props: ItemsInfoPaneProps) {
     let latestCopyTime = new Date();
     // Find the earliest copy time and the latest copy time.
     props.items.forEach(item => {
-      if (item.firstTimeCopy < earliestCopyTime) {
-        earliestCopyTime = item.firstTimeCopy
+      if (item.copyTime < earliestCopyTime) {
+        earliestCopyTime = item.copyTime
       }
-      if (item.lastTimeCopy > latestCopyTime) {
-        latestCopyTime = item.lastTimeCopy
+      if (item.copyTime > latestCopyTime) {
+        latestCopyTime = item.copyTime
       }
     })
     let earliestCopyTimeStr = earliestCopyTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

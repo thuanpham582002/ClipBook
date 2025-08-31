@@ -8,6 +8,7 @@ import {
   addHistoryItem,
   addSelectedHistoryItemIndex,
   AppInfo,
+  checkIfLastItem,
   clear,
   clearSelection,
   deleteHistoryItem,
@@ -178,12 +179,15 @@ export default function HistoryPane(props: HistoryPaneProps) {
     
     let item = findItem(content, imageFileName, filePath)
     if (item) {
-      // Update existing item with new copy time and count
-      item.lastTimeCopy = new Date()
-      item.numberOfCopies += 1
-      await updateHistoryItem(item.id!, item)
-    } else {
-      item = await addHistoryItem(
+      // Found duplicate - check if it's the last item
+      if (checkIfLastItem(item)) {
+        return; // Skip - don't do anything if it's the last item
+      }
+      // Not the last item - create new duplicate
+    }
+    
+    // Create new item (either no duplicate found or duplicate is not last item)
+    item = await addHistoryItem(
           content,
           sourceAppPath,
           imageFileName,
@@ -199,7 +203,6 @@ export default function HistoryPane(props: HistoryPaneProps) {
           isFolder,
           rtf,
           html)
-    }
     setHistory([...getHistoryItems()])
 
     // When the history is changed, we need to reset the next item index for paste.
@@ -830,7 +833,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   async function pasteItem(item: Clip, keepHistory: boolean = false, pasteObject: boolean = false) {
-    item.lastTimeCopy = new Date(); item.numberOfCopies += 1
+    item.copyTime = new Date(); item.numberOfCopies += 1
     // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always updating copy statistics
     await updateHistoryItem(item.id!, item)
 
@@ -853,7 +856,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
   async function pasteFileItems(items: Clip[], keepHistory: boolean = false) {
     let filePaths = []
     for (const item of items) {
-      item.lastTimeCopy = new Date(); item.numberOfCopies += 1
+      item.copyTime = new Date(); item.numberOfCopies += 1
       // Note: We don't need to check prefShouldUpdateHistoryAfterAction since we're always updating copy statistics
       await updateHistoryItem(item.id!, item)
       filePaths.push(getFilePath(item))
@@ -1064,7 +1067,7 @@ export default function HistoryPane(props: HistoryPaneProps) {
           let now = new Date()
           // Add one millisecond to the time to make sure the items are not identical.
           now.setMilliseconds(now.getMilliseconds() - (i * 100))
-          item.firstTimeCopy = now; item.lastTimeCopy = now; item.numberOfCopies = 1
+          item.copyTime = now; item.numberOfCopies = 1
           items.push(item)
         }
         setHistory([...getHistoryItems()])
@@ -1133,10 +1136,33 @@ export default function HistoryPane(props: HistoryPaneProps) {
   }
 
   async function copyItemToClipboard(item: Clip, pasteObject: boolean = false) {
-    // Update the copy statistics using the new database structure
-    item.lastTimeCopy = new Date()
-    item.numberOfCopies += 1
-    await updateHistoryItem(item.id!, item)
+    // Apply new duplicate logic
+    if (checkIfLastItem(item)) {
+      // Skip - don't do anything if it's the last item
+      console.log('⏭️ Skipping copy - item is latest')
+    } else {
+      // Not the last item - create new duplicate
+      console.log('✨ Creating duplicate - item is not latest')
+      let newItem = await addHistoryItem(
+        item.content,
+        item.sourceApp,
+        item.imageFileName,
+        item.imageThumbFileName,
+        item.imageWidth,
+        item.imageHeight,
+        item.imageSizeInBytes,
+        item.imageText,
+        item.filePath,
+        item.filePathFileName,
+        item.filePathThumbFileName,
+        item.fileSizeInBytes,
+        item.fileFolder,
+        item.rtf,
+        item.html
+      )
+      // Use the new item for clipboard operation
+      item = newItem
+    }
 
     let rtf = pasteObject ? getRTF(item) : ""
     let html = pasteObject ? getHTML(item) : ""

@@ -34,8 +34,7 @@ export class Clip {
   sourceApp: string = "";
   favorite: boolean = false;
   tags?: number[] = [];
-  firstTimeCopy: Date = new Date();
-  lastTimeCopy: Date = new Date();
+  copyTime: Date = new Date();
   numberOfCopies: number = 1;
   imageFileName: string = "";
   imageThumbFileName: string = "";
@@ -65,7 +64,7 @@ class AppDatabase extends Dexie {
   constructor() {
     super('ClipBookDB');
     this.version(1).stores({
-      history: '++id, title, content, type, sourceApp, favorite, firstTimeCopy, lastTimeCopy, numberOfCopies, imageFileName, imageThumbFileName, imageWidth, imageHeight, imageSizeInBytes, imageText, filePath, filePathFileName, filePathThumbFileName, fileSizeInBytes, fileFolder, rtf, html',
+      history: '++id, title, content, type, sourceApp, favorite, copyTime, numberOfCopies, imageFileName, imageThumbFileName, imageWidth, imageHeight, imageSizeInBytes, imageText, filePath, filePathFileName, filePathThumbFileName, fileSizeInBytes, fileFolder, rtf, html',
       linkPreviews: '++id, url, title, description, imageFileName, faviconFileName'
     });
   }

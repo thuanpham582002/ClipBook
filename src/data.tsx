@@ -188,10 +188,9 @@ export async function loadHistory() {
   // Migrate existing items to ensure they have the new timestamp fields
   let needsMigration = false
   for (const item of history) {
-    if (!item.firstTimeCopy || !item.lastTimeCopy || item.numberOfCopies === undefined) {
+    if (!item.copyTime || item.numberOfCopies === undefined) {
       // Initialize missing fields with default values
-      if (!item.firstTimeCopy) item.firstTimeCopy = new Date()
-      if (!item.lastTimeCopy) item.lastTimeCopy = item.firstTimeCopy
+      if (!item.copyTime) item.copyTime = new Date()
       if (item.numberOfCopies === undefined) item.numberOfCopies = 1
       needsMigration = true
     }
@@ -342,6 +341,21 @@ export function findItemByImageFileName(imageFileName: string): Clip | undefined
   return undefined
 }
 
+export function checkIfLastItem(item: Clip): boolean {
+  if (history.length === 0) return false
+  
+  // Find the item with the newest copyTime
+  let lastItem = history[0]
+  for (let i = 1; i < history.length; i++) {
+    if (history[i].copyTime > lastItem.copyTime) {
+      lastItem = history[i]
+    }
+  }
+  
+  // Check if the provided item is the last item
+  return item.id === lastItem.id
+}
+
 async function deleteItem(item: Clip) {
   let index = hasItem(item);
   if (index !== -1) {
@@ -484,16 +498,10 @@ export async function clear(keepFavorites: boolean): Promise<Clip[]> {
 export function sortHistory(type: SortHistoryType, history: Clip[]) {
   switch (type) {
     case SortHistoryType.TimeOfFirstCopy:
-      history.sort((a, b) => {
-        const aTime = a.firstTimeCopy?.getTime() || 0
-        const bTime = b.firstTimeCopy?.getTime() || 0
-        return bTime - aTime
-      })
-      break
     case SortHistoryType.TimeOfLastCopy:
       history.sort((a, b) => {
-        const aTime = a.lastTimeCopy?.getTime() || 0
-        const bTime = b.lastTimeCopy?.getTime() || 0
+        const aTime = a.copyTime?.getTime() || 0
+        const bTime = b.copyTime?.getTime() || 0
         return bTime - aTime
       })
       break
