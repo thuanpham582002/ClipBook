@@ -41,6 +41,11 @@ NSString *prefAlwaysDisplay = @"always_display";
 NSString *prefCopyOnDoubleClick = @"copy_on_double_click";
 NSString *prefCopyOnNumberAction = @"copy_on_number_action";
 
+// Vim Mode Preferences
+NSString *prefVimModeEnabled = @"vim_mode.enabled";
+NSString *prefVimShowStatusLine = @"vim_mode.show_status_line";
+NSString *prefVimPanelNavigation = @"vim_mode.panel_navigation";
+
 NSString *prefLastSystemBootTime = @"last_system_boot_time";
 NSString *prefLicenseKey = @"license_key";
 
@@ -1294,4 +1299,59 @@ bool AppSettingsMac::allowCheckForUpdates() {
 
 bool AppSettingsMac::isDeviceManaged() {
   return ::isDeviceManaged();
+}
+
+// Vim Mode Preferences
+void AppSettingsMac::saveVimModeEnabled(bool enabled) {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setBool:enabled forKey:prefVimModeEnabled];
+  [defaults synchronize];
+}
+
+bool AppSettingsMac::shouldVimModeEnabled() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults objectForKey:prefVimModeEnabled] != nil) {
+    return [defaults boolForKey:prefVimModeEnabled];
+  }
+  return false; // Default to false
+}
+
+bool AppSettingsMac::isVimModeEnabledManaged() {
+  return prefReadBoolValue(@"managed.vim_mode.enabled", false);
+}
+
+void AppSettingsMac::saveVimShowStatusLine(bool show) {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setBool:show forKey:prefVimShowStatusLine];
+  [defaults synchronize];
+}
+
+bool AppSettingsMac::shouldVimShowStatusLine() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults objectForKey:prefVimShowStatusLine] != nil) {
+    return [defaults boolForKey:prefVimShowStatusLine];
+  }
+  return true; // Default to true
+}
+
+bool AppSettingsMac::isVimShowStatusLineManaged() {
+  return prefReadBoolValue(@"managed.vim_mode.show_status_line", false);
+}
+
+void AppSettingsMac::saveVimPanelNavigation(bool enabled) {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setBool:enabled forKey:prefVimPanelNavigation];
+  [defaults synchronize];
+}
+
+bool AppSettingsMac::shouldVimPanelNavigation() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults objectForKey:prefVimPanelNavigation] != nil) {
+    return [defaults boolForKey:prefVimPanelNavigation];
+  }
+  return true; // Default to true
+}
+
+bool AppSettingsMac::isVimPanelNavigationManaged() {
+  return prefReadBoolValue(@"managed.vim_mode.panel_navigation", false);
 }

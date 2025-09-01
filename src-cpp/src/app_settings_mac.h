@@ -252,6 +252,19 @@ class AppSettingsMac : public AppSettings {
   void saveToggleFilterShortcut(std::string shortcut) override;
   std::string getToggleFilterShortcut() override;
 
+  // Vim Mode Preferences
+  void saveVimModeEnabled(bool enabled) override;
+  bool shouldVimModeEnabled() override;
+  bool isVimModeEnabledManaged() override;
+
+  void saveVimShowStatusLine(bool show) override;
+  bool shouldVimShowStatusLine() override;
+  bool isVimShowStatusLineManaged() override;
+
+  void saveVimPanelNavigation(bool enabled) override;
+  bool shouldVimPanelNavigation() override;
+  bool isVimPanelNavigationManaged() override;
+
  private:
   static molybden::Rect getWindowBoundsForScreen(int screen_id);
 };

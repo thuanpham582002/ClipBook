@@ -261,6 +261,19 @@ class AppSettings {
 
   virtual void saveToggleFilterShortcut(std::string shortcut) = 0;
   virtual std::string getToggleFilterShortcut() = 0;
+
+  // Vim Mode Preferences
+  virtual void saveVimModeEnabled(bool enabled) = 0;
+  virtual bool shouldVimModeEnabled() = 0;
+  virtual bool isVimModeEnabledManaged() = 0;
+
+  virtual void saveVimShowStatusLine(bool show) = 0;
+  virtual bool shouldVimShowStatusLine() = 0;
+  virtual bool isVimShowStatusLineManaged() = 0;
+
+  virtual void saveVimPanelNavigation(bool enabled) = 0;
+  virtual bool shouldVimPanelNavigation() = 0;
+  virtual bool isVimPanelNavigationManaged() = 0;
 };
 
 #endif // CLIPBOOK_APP_SETTINGS_H_
