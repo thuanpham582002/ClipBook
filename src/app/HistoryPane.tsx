@@ -97,6 +97,8 @@ import {Clip, ClipType, getFilePath, getHTML, getImageFileName, getImageText, ge
 import {formatText, getClipType, isUrl} from "@/lib/utils";
 import {ClipboardIcon} from "lucide-react";
 import {getTrialLicenseDaysLeft, isTrialLicense, isTrialLicenseExpired} from "@/licensing";
+import {useVimMode} from "@/hooks/use-vim-mode";
+import VimNavigationManager from "@/lib/vim-navigation";
 import TrialExpiredDialog from "@/app/TrialExpiredDialog";
 import {SidebarProvider} from "@/components/ui/sidebar";
 import * as React from "react";
@@ -155,6 +157,11 @@ export default function HistoryPane(props: HistoryPaneProps) {
   const [selectedItemType, setSelectedItemType] = useState<AppSidebarItemType>("All")
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>(undefined)
   const [selectedApp, setSelectedApp] = useState<AppInfo | undefined>(undefined)
+
+  // Vim mode integration
+  const vimMode = useVimMode()
+  const [vimLastKey, setVimLastKey] = useState<string | null>(null)
+  const [vimLastKeyTime, setVimLastKeyTime] = useState<number>(0)
 
   useEffect(() => {
     loadHistory().then(() => {
@@ -371,6 +378,115 @@ export default function HistoryPane(props: HistoryPaneProps) {
     const down = async (e: KeyboardEvent) => {
       if (isTrialExpired) {
         return
+      }
+
+      // Vim mode handling - takes precedence over regular shortcuts
+      if (vimMode.enabled) {
+        const currentTime = Date.now()
+        const currentSelectedIndex = getFirstSelectedHistoryItemIndex()
+        
+        // Handle vim key press
+        const vimResult = vimMode.handleVimKeyPress(e, currentSelectedIndex)
+        
+        if (vimResult.handled) {
+          if (vimResult.preventDefault !== false) {
+            e.preventDefault()
+          }
+          
+          // Handle sequence keys (like gg)
+          if (e.key === 'g') {
+            const sequenceResult = VimNavigationManager.handleSequenceKey(
+              e.key, vimLastKey, currentTime, vimLastKeyTime
+            )
+            
+            setVimLastKey(e.key)
+            setVimLastKeyTime(currentTime)
+            
+            if (sequenceResult.consumedSequence && sequenceResult.action) {
+              // Execute the sequence action
+              switch (sequenceResult.action) {
+                case 'goto-first':
+                  selectFirstItem()
+                  break
+                case 'goto-last':
+                  selectLastItem()
+                  break
+              }
+              return
+            }
+          } else {
+            // Reset sequence tracking for non-sequence keys
+            setVimLastKey(null)
+            setVimLastKeyTime(0)
+          }
+          
+          // Handle vim actions
+          if (vimResult.action) {
+            switch (vimResult.action) {
+              case 'move-down':
+                selectNextItem()
+                break
+              case 'move-up':
+                selectPreviousItem()
+                break
+              case 'goto-first':
+                selectFirstItem()
+                break
+              case 'goto-last':
+                selectLastItem()
+                break
+              case 'page-down':
+                jumpToNextGroupOfItems()
+                break
+              case 'page-up':
+                jumpToPrevGroupOfItems()
+                break
+              case 'page-down-full':
+                jumpToNextGroupOfItems() // TODO: Implement full page scroll
+                break
+              case 'page-up-full':
+                jumpToPrevGroupOfItems() // TODO: Implement full page scroll
+                break
+              case 'yank-copy':
+                await handleCopyToClipboard()
+                break
+              case 'delete':
+                await handleDeleteItems()
+                break
+              case 'paste':
+                await handlePaste()
+                break
+              case 'toggle-favorite':
+                await handleToggleFavorite()
+                break
+              case 'toggle-preview':
+                handleTogglePreview()
+                break
+              case 'context-action':
+                // Context-dependent action - for middle panel, this is paste
+                if (vimMode.panelFocus === 'middle') {
+                  await handlePaste()
+                } else {
+                  // TODO: Handle context actions for other panels
+                }
+                break
+              case 'focus-search':
+                focusSearchField()
+                break
+              case 'focus-left-panel':
+                // TODO: Will be implemented when we add sidebar vim support
+                break
+              case 'focus-right-panel':
+                // TODO: Will be implemented when we add preview vim support
+                break
+              case 'focus-middle-panel':
+                // Focus back to middle panel - nothing special needed as it's default
+                break
+            }
+          }
+          
+          return // Vim mode handled the key, don't continue to regular shortcuts
+        }
       }
       // Select the previous item when the select previous item shortcut is pressed.
       if (isShortcutMatch(prefGetSelectPreviousItemShortcut(), e)) {
@@ -1658,10 +1774,12 @@ export default function HistoryPane(props: HistoryPaneProps) {
                       onSelectApp={handleSidebarAppSelect}
                       selectedTag={selectedTag}
                       selectedApp={selectedApp}
-                      selectedItemType={selectedItemType}/>
+                      selectedItemType={selectedItemType}
+                      data-vim-panel="left"
+                      data-vim-available={filterVisible.toString()}/>
           <div className="w-full">
             <ResizablePanelGroup direction="horizontal">
-              <ResizablePanel className="flex flex-col">
+              <ResizablePanel className="flex flex-col" data-vim-panel="middle" data-vim-available="true">
                 <HistoryItemsPane history={history}
                                   appName={props.appName}
                                   appIcon={props.appIcon}
@@ -1681,7 +1799,9 @@ export default function HistoryPane(props: HistoryPaneProps) {
               </ResizablePanel>
               <ResizableHandle/>
               <ResizablePanel defaultSize={previewVisible ? 50 : 0} ref={previewPanelRef}
-                              className="transition-all duration-200 ease-out bg-secondary">
+                              className="transition-all duration-200 ease-out bg-secondary"
+                              data-vim-panel="right"
+                              data-vim-available={previewVisible.toString()}>
                 <PreviewPane selectedItemIndices={selectedItemIndices}
                              appName={props.appName}
                              appIcon={props.appIcon}

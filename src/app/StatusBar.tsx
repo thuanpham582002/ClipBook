@@ -11,6 +11,7 @@ import {XIcon} from "lucide-react";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {emitter} from "@/actions";
 import {useTranslation} from "react-i18next";
+import VimStatusLine from "@/app/VimStatusLine";
 
 declare const restartApp: () => void;
 declare const isUpdateAvailable: () => boolean;
@@ -75,7 +76,11 @@ export default function StatusBar(props: StatusBarProps) {
                 </Tooltip>
               </div>
           ) : (
-              <div className="flex text-sm text-primary-foreground">
+              <div className="flex items-center space-x-3 text-sm text-primary-foreground">
+                {/* Vim Status Line */}
+                <VimStatusLine className="" />
+                
+                {/* Navigation Shortcuts */}
                 <Button variant="info" className="p-1 h-8 rounded-sm outline-none">
                   <ShortcutLabel
                       shortcut={prefGetSelectNextItemShortcut() + " + " + prefGetSelectPreviousItemShortcut()}/>

@@ -99,6 +99,18 @@ declare const setCopyOnNumberAction: (copy: boolean) => void;
 declare const shouldCopyOnNumberAction: () => boolean;
 declare const isCopyOnNumberActionManaged: () => boolean;
 
+declare const saveVimModeEnabled: (enabled: boolean) => void;
+declare const shouldVimModeEnabled: () => boolean;
+declare const isVimModeEnabledManaged: () => boolean;
+
+declare const saveVimShowStatusLine: (show: boolean) => void;
+declare const shouldVimShowStatusLine: () => boolean;
+declare const isVimShowStatusLineManaged: () => boolean;
+
+declare const saveVimPanelNavigation: (enabled: boolean) => void;
+declare const shouldVimPanelNavigation: () => boolean;
+declare const isVimPanelNavigationManaged: () => boolean;
+
 declare const saveOpenAppShortcut: (shortcut: string) => void;
 declare const getOpenAppShortcut: () => string;
 declare const saveCloseAppShortcut: (shortcut: string) => void;
@@ -999,4 +1011,59 @@ export function prefSetCopyOnNumberAction(copy: boolean) {
 export function prefShouldCopyOnNumberAction() {
   if (typeof shouldCopyOnNumberAction === 'undefined') return true
   return shouldCopyOnNumberAction()
+}
+
+// Vim Mode Preferences
+export function prefGetVimModeEnabled() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldVimModeEnabled === 'undefined') {
+    return false; // Default to false
+  }
+  return shouldVimModeEnabled()
+}
+
+export function prefSetVimModeEnabled(enabled: boolean) {
+  if (typeof saveVimModeEnabled === 'undefined') return
+  saveVimModeEnabled(enabled)
+}
+
+export function prefIsVimModeEnabledManaged() {
+  if (typeof isVimModeEnabledManaged === 'undefined') return false
+  return isVimModeEnabledManaged()
+}
+
+export function prefGetVimShowStatusLine() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldVimShowStatusLine === 'undefined') {
+    return true; // Default to true
+  }
+  return shouldVimShowStatusLine()
+}
+
+export function prefSetVimShowStatusLine(show: boolean) {
+  if (typeof saveVimShowStatusLine === 'undefined') return
+  saveVimShowStatusLine(show)
+}
+
+export function prefIsVimShowStatusLineManaged() {
+  if (typeof isVimShowStatusLineManaged === 'undefined') return false
+  return isVimShowStatusLineManaged()
+}
+
+export function prefGetVimPanelNavigation() {
+  // Fallback for web development mode when native functions aren't available
+  if (typeof shouldVimPanelNavigation === 'undefined') {
+    return true; // Default to true
+  }
+  return shouldVimPanelNavigation()
+}
+
+export function prefSetVimPanelNavigation(enabled: boolean) {
+  if (typeof saveVimPanelNavigation === 'undefined') return
+  saveVimPanelNavigation(enabled)
+}
+
+export function prefIsVimPanelNavigationManaged() {
+  if (typeof isVimPanelNavigationManaged === 'undefined') return false
+  return isVimPanelNavigationManaged()
 }

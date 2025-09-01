@@ -23,6 +23,9 @@ import {
   prefSetShowIconInMenuBar,
   prefSetTheme,
   prefShouldPlaySoundOnCopy,
+  prefGetVimModeEnabled,
+  prefSetVimModeEnabled,
+  prefIsVimModeEnabledManaged,
 } from "@/pref";
 import {ChevronsUpDown, RefreshCcwIcon,} from "lucide-react";
 import {
@@ -53,6 +56,7 @@ export default function General() {
   const [showIconInMenuBar, setShowIconInMenuBar] = useState(prefGetShowIconInMenuBar())
   const [openWindowStrategy, setOpenWindowStrategy] = useState(prefGetOpenWindowStrategy())
   const [playSoundOnCopy, setPlaySoundOnCopy] = useState(prefShouldPlaySoundOnCopy())
+  const [vimModeEnabled, setVimModeEnabled] = useState(prefGetVimModeEnabled())
   const [checkingForUpdates, setCheckingForUpdates] = useState(false)
 
   // The map of open strategy enum values to labels.
@@ -105,6 +109,11 @@ export default function General() {
   function handlePlaySoundOnCopyChange(play: boolean) {
     setPlaySoundOnCopy(play)
     prefSetPlaySoundOnCopy(play)
+  }
+
+  function handleVimModeEnabledChange(enabled: boolean) {
+    setVimModeEnabled(enabled)
+    prefSetVimModeEnabled(enabled)
   }
 
   function handleCheckForUpdates() {
@@ -275,15 +284,27 @@ export default function General() {
             </div>
 
             <div className="flex items-center justify-between space-x-20 py-1">
-              <Label htmlFor="showIcon" className="flex flex-col text-base">
+              <Label htmlFor="playSoundOnCopy" className="flex flex-col text-base">
                 <span className="">{t('settings.general.playSound.title')}</span>
                 <span className="text-neutral-500 font-normal text-sm">
                   {t('settings.general.playSound.description')}
                 </span>
               </Label>
-              <Switch id="showIcon" checked={playSoundOnCopy}
+              <Switch id="playSoundOnCopy" checked={playSoundOnCopy}
                       onCheckedChange={handlePlaySoundOnCopyChange}
                       disabled={prefIsPlaySoundOnCopyManaged()}/>
+            </div>
+
+            <div className="flex items-center justify-between space-x-20 py-1">
+              <Label htmlFor="vimModeEnabled" className="flex flex-col text-base">
+                <span className="">Vim Mode</span>
+                <span className="text-neutral-500 font-normal text-sm">
+                  Enable vim-style navigation (hjkl keys, visual mode)
+                </span>
+              </Label>
+              <Switch id="vimModeEnabled" checked={vimModeEnabled}
+                      onCheckedChange={handleVimModeEnabledChange}
+                      disabled={prefIsVimModeEnabledManaged()}/>
             </div>
 
             <div className="flex items-center justify-between space-x-20 py-1">
