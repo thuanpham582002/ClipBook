@@ -5,8 +5,7 @@
   "identifier": "com.ikryanov.clipbook",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:6136",
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run build:frontend",
     "beforeBuildCommand": "npm run build:frontend"
   },
   "app": {

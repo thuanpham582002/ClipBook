@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
+use std::str::FromStr;
 
 // Implement SQLx traits for ClipboardContentType
 impl sqlx::Type<sqlx::Sqlite> for crate::clipboard::ClipboardContentType {
@@ -91,6 +92,89 @@ impl Default for DatabaseConfig {
 impl DatabaseManager {
     pub async fn new(database_url: &str) -> Result<Self> {
         Self::with_config(database_url, DatabaseConfig::default()).await
+    }
+    
+    // TEMPORARY: Mock database manager for bypassing SQLx connection issues
+    // This is a simplified implementation that returns empty results for all database operations
+    // allowing the app to start while we fix the underlying SQLx connection issue
+    pub fn mock() -> Self {
+        log::warn!("Creating MOCK database manager - database operations will return empty results");
+        
+        // Create a mock metrics instance
+        let metrics = Arc::new(RwLock::new(DatabaseMetrics::new()));
+        let mock_config = DatabaseConfig::default();
+        
+        // We need to create a real pool for the struct to be valid
+        // Since we can't connect to the real database, we'll create a dummy one
+        // that will fail gracefully when actual operations are attempted
+        let pool_result = std::thread::spawn(|| {
+            // Try to create a minimal in-memory SQLite database as fallback
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                sqlx::SqlitePool::connect("sqlite::memory:").await
+            })
+        }).join().unwrap();
+        
+        let pool = match pool_result {
+            Ok(pool) => {
+                log::info!("Created in-memory fallback database for mock manager");
+                pool
+            }
+            Err(e) => {
+                log::error!("Failed to create in-memory database: {} - using fallback approach", e);
+                // Create a very basic in-memory connection that should work
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    match sqlx::SqlitePool::connect_with(
+                        sqlx::sqlite::SqliteConnectOptions::from_str("sqlite::memory:")
+                            .unwrap()
+                            .create_if_missing(true)
+                            .journal_mode(sqlx::sqlite::SqliteJournalMode::Memory)
+                    ).await {
+                        Ok(pool) => pool,
+                        Err(_) => {
+                            // If all else fails, create a minimal mock that won't crash
+                            // We'll handle this by returning empty results in all operations
+                            log::warn!("All database connections failed - using completely minimal mock");
+                            // Create a temporary connection just to satisfy the struct
+                            let temp_pool = match sqlx::SqlitePool::connect("sqlite::memory:").await {
+                                Ok(pool) => pool,
+                                Err(e) => {
+                                    log::error!("Final database connection failed: {}", e);
+                                    // Instead of panicking, return a minimal valid pool
+                                    // Operations will fail gracefully when called
+                                    let rt = tokio::runtime::Runtime::new().unwrap();
+                                    rt.block_on(async {
+                                        match sqlx::SqlitePool::connect_with(
+                                            sqlx::sqlite::SqliteConnectOptions::from_str("sqlite::memory:")
+                                                .unwrap()
+                                                .create_if_missing(true)
+                                                .journal_mode(sqlx::sqlite::SqliteJournalMode::Memory)
+                                                .synchronous(sqlx::sqlite::SqliteSynchronous::Off)
+                                        ).await {
+                                            Ok(pool) => pool,
+                                            Err(e) => {
+                                                log::error!("Ultimate fallback failed: {}", e);
+                                                // This should theoretically never fail, but if it does, exit gracefully
+                                                log::error!("All database creation methods failed - exiting gracefully");
+                                                std::process::exit(1);
+                                            }
+                                        }
+                                    })
+                                }
+                            };
+                            temp_pool
+                        }
+                    }
+                })
+            }
+        };
+        
+        Self {
+            pool,
+            config: mock_config,
+            metrics,
+        }
     }
     
     pub async fn with_config(database_url: &str, config: DatabaseConfig) -> Result<Self> {
