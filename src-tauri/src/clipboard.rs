@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 use log::{info, error};
 use chrono::Utc;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ClipboardItem {
     pub id: String,
     pub content: String,
@@ -18,7 +18,7 @@ pub struct ClipboardItem {
     pub tags: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ClipboardContentType {
     Text,
     Image,
